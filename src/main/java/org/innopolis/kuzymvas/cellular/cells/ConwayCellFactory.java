@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  Фабрика изначально мертвых клеток Конвея.
+ * Фабрика изначально мертвых клеток Конвея.
  */
-public class ConwayCellFactory implements  CellFactory {
+public class ConwayCellFactory implements CellFactory {
 
     @Override
     public Cell createCelL() {

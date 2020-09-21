@@ -24,17 +24,17 @@ public class ConwayCellTest {
     public void testIsAlive() {
         Cell aliveCell = new ConwayCell(true);
         Cell deadCell = new ConwayCell(false);
-        Assert.assertTrue("Cell that was created alive, reported itself dead",aliveCell.isAlive());
-        Assert.assertFalse("Cell that was created dead, reported itself alive",deadCell.isAlive());
+        Assert.assertTrue("Cell that was created alive, reported itself dead", aliveCell.isAlive());
+        Assert.assertFalse("Cell that was created dead, reported itself alive", deadCell.isAlive());
     }
 
     @Test
     public void testSetAlive() {
         Cell cell = new ConwayCell(true);
         cell.setAlive(false);
-        Assert.assertFalse("Cell that was set dead, reported itself dead",cell.isAlive());
+        Assert.assertFalse("Cell that was set dead, reported itself dead", cell.isAlive());
         cell.setAlive(true);
-        Assert.assertTrue("Cell that was set alive, reported itself alive",cell.isAlive());
+        Assert.assertTrue("Cell that was set alive, reported itself alive", cell.isAlive());
     }
 
     @Test
@@ -50,9 +50,9 @@ public class ConwayCellTest {
         aliveCell.updateState();
         Mockito.verify(aliveMock, Mockito.times(2)).isAlive();
         Mockito.verify(deadMock, Mockito.times(2)).isAlive();
-        Assert.assertTrue("Alive cell died while having two neighbors",aliveCell.isAlive());
+        Assert.assertTrue("Alive cell died while having two neighbors", aliveCell.isAlive());
 
-        Mockito.clearInvocations(aliveMock,deadMock);
+        Mockito.clearInvocations(aliveMock, deadMock);
         List<Cell> stayAliveThreeNeighborhood = new ArrayList<>();
         stayAliveThreeNeighborhood.add(aliveMock);
         stayAliveThreeNeighborhood.add(aliveMock);
@@ -63,7 +63,7 @@ public class ConwayCellTest {
         aliveCell.updateState();
         Mockito.verify(aliveMock, Mockito.times(3)).isAlive();
         Mockito.verify(deadMock, Mockito.times(1)).isAlive();
-        Assert.assertTrue("Alive cell died while having tree neighbors",aliveCell.isAlive());
+        Assert.assertTrue("Alive cell died while having tree neighbors", aliveCell.isAlive());
     }
 
     @Test
@@ -79,7 +79,7 @@ public class ConwayCellTest {
         deadCell.updateState();
         Mockito.verify(aliveMock, Mockito.times(3)).isAlive();
         Mockito.verify(deadMock, Mockito.times(1)).isAlive();
-        Assert.assertTrue("Dead cell didn't become alive while having three neighbors",deadCell.isAlive());
+        Assert.assertTrue("Dead cell didn't become alive while having three neighbors", deadCell.isAlive());
     }
 
     @Test
@@ -95,9 +95,9 @@ public class ConwayCellTest {
         aliveCell.updateState();
         Mockito.verify(aliveMock, Mockito.times(1)).isAlive();
         Mockito.verify(deadMock, Mockito.times(3)).isAlive();
-        Assert.assertFalse("Alive cell stayed alive while having one neighbors",aliveCell.isAlive());
+        Assert.assertFalse("Alive cell stayed alive while having one neighbors", aliveCell.isAlive());
 
-        Mockito.clearInvocations(aliveMock,deadMock);
+        Mockito.clearInvocations(aliveMock, deadMock);
         List<Cell> dieFourNeighborhood = new ArrayList<>();
         dieFourNeighborhood.add(deadMock);
         dieFourNeighborhood.add(deadMock);
@@ -109,7 +109,7 @@ public class ConwayCellTest {
         aliveCell.updateState();
         Mockito.verify(aliveMock, Mockito.times(0)).isAlive();
         Mockito.verify(deadMock, Mockito.times(4)).isAlive();
-        Assert.assertFalse("Alive cell stayed alive while having zero neighbors",aliveCell.isAlive());
+        Assert.assertFalse("Alive cell stayed alive while having zero neighbors", aliveCell.isAlive());
     }
 
     @Test
@@ -119,18 +119,18 @@ public class ConwayCellTest {
             for (int i = 0; i < neighborCount; i++) {
                 neighborhood.add(aliveMock);
             }
-            for(int i = neighborCount; i < 8; i++) {
+            for (int i = neighborCount; i < 8; i++) {
                 neighborhood.add(deadMock);
             }
-            Mockito.clearInvocations(aliveMock,deadMock);
+            Mockito.clearInvocations(aliveMock, deadMock);
             Cell aliveCell = new ConwayCell(true);
             aliveCell.setNeighborhood(neighborhood);
             aliveCell.calculateNextState();
             aliveCell.updateState();
             Mockito.verify(aliveMock, Mockito.times(neighborCount)).isAlive();
-            Mockito.verify(deadMock, Mockito.times(8-neighborCount)).isAlive();
-            Assert.assertFalse("Alive cell stayed alive while having "+neighborCount+" neighbors",aliveCell.isAlive());
-
+            Mockito.verify(deadMock, Mockito.times(8 - neighborCount)).isAlive();
+            Assert.assertFalse("Alive cell stayed alive while having " + neighborCount + " neighbors",
+                               aliveCell.isAlive());
         }
     }
 
@@ -144,20 +144,18 @@ public class ConwayCellTest {
             for (int i = 0; i < neighborCount; i++) {
                 neighborhood.add(aliveMock);
             }
-            for(int i = neighborCount; i < 8; i++) {
+            for (int i = neighborCount; i < 8; i++) {
                 neighborhood.add(deadMock);
             }
-            Mockito.clearInvocations(aliveMock,deadMock);
+            Mockito.clearInvocations(aliveMock, deadMock);
             Cell deadCell = new ConwayCell(false);
             deadCell.setNeighborhood(neighborhood);
             deadCell.calculateNextState();
             deadCell.updateState();
             Mockito.verify(aliveMock, Mockito.times(neighborCount)).isAlive();
-            Mockito.verify(deadMock, Mockito.times(8-neighborCount)).isAlive();
-            Assert.assertFalse("Dead cell become alive while having "+neighborCount+" neighbors",deadCell.isAlive());
-
+            Mockito.verify(deadMock, Mockito.times(8 - neighborCount)).isAlive();
+            Assert.assertFalse("Dead cell become alive while having " + neighborCount + " neighbors",
+                               deadCell.isAlive());
         }
     }
-
-
 }
