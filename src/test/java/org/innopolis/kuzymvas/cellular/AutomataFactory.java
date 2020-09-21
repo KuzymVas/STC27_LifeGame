@@ -11,7 +11,7 @@ public class AutomataFactory {
                return new SingleThreadRWAutomata(width, height, factory, neighborhoodType);
            }
            case MULTI_RWA: {
-               return null;
+               return new MultiThreadRWAutomata(width,height,factory,neighborhoodType, 2);
            }
            default: {
                return null;
