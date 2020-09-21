@@ -9,7 +9,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
 /**
- *  Класс многопоточного клеточного автомата на замкнутом прямоугольном поле
+ * Класс многопоточного клеточного автомата на замкнутом прямоугольном поле
  */
 public class MultiThreadRWAutomata extends AbstractRectangularWraparoundAutomata {
 
@@ -18,35 +18,35 @@ public class MultiThreadRWAutomata extends AbstractRectangularWraparoundAutomata
     List<Thread> updatersThread;
 
     /**
-     *
      * Создает новый автомат
-     * @param width - ширина поля
-     * @param height - высота поля
-     * @param factory - фабрика для клеток
+     *
+     * @param width            - ширина поля
+     * @param height           - высота поля
+     * @param factory          - фабрика для клеток
      * @param neighborhoodType - тип локального окружения клетки: по Муру - это 8 клеток вокруг,
      *                         по Вон Нейману - 4 ортогональных клетки вокруг,
      *                         Расширенный Вон Нейман - 8 ортогональных клеток, по две в каждую сторону
-     * @param threadsNumber - число потоков для использования в обновлениях
+     * @param threadsNumber    - число потоков для использования в обновлениях
      */
     public MultiThreadRWAutomata(
             int width, int height, CellFactory factory,
             NeighborhoodType neighborhoodType, int threadsNumber) {
         super(width, height, factory, neighborhoodType);
         isOkay = true;
-        barrier = new CyclicBarrier(threadsNumber+1);
+        barrier = new CyclicBarrier(threadsNumber + 1);
         updatersThread = new ArrayList<>();
         int share = cells.size() / threadsNumber;
-        for (int i = 0; i < threadsNumber-1; i++) {
-            List<Cell> currThreadCells = cells.subList(i*share, (i+1)*share);
+        for (int i = 0; i < threadsNumber - 1; i++) {
+            List<Cell> currThreadCells = cells.subList(i * share, (i + 1) * share);
             CellUpdater updater = new CellUpdater(currThreadCells, barrier);
-            Thread updaterThread  = new Thread(updater);
+            Thread updaterThread = new Thread(updater);
             updaterThread.setDaemon(true);
             updaterThread.start();
             updatersThread.add(updaterThread);
         }
-        List<Cell> lastThreadCells = cells.subList((threadsNumber-1)*share, cells.size());
+        List<Cell> lastThreadCells = cells.subList((threadsNumber - 1) * share, cells.size());
         CellUpdater updater = new CellUpdater(lastThreadCells, barrier);
-        Thread updaterThread  = new Thread(updater);
+        Thread updaterThread = new Thread(updater);
         updaterThread.setDaemon(true);
         updaterThread.start();
         updatersThread.add(updaterThread);
@@ -58,8 +58,9 @@ public class MultiThreadRWAutomata extends AbstractRectangularWraparoundAutomata
      */
     @Override
     public void updateAutomata() {
-        if (!isOkay)
+        if (!isOkay) {
             return;
+        }
         try {
             barrier.await();
             barrier.await();
@@ -77,7 +78,7 @@ public class MultiThreadRWAutomata extends AbstractRectangularWraparoundAutomata
      * Прерывает потоки обновления и выключает возможность обновления у автомата
      */
     private void shutDown() {
-        for (Thread updaterThread: updatersThread) {
+        for (Thread updaterThread : updatersThread) {
             updaterThread.interrupt();
         }
         isOkay = false;
@@ -86,14 +87,15 @@ public class MultiThreadRWAutomata extends AbstractRectangularWraparoundAutomata
     /**
      * Класс обновителя клеток для многопоточного автомата
      */
-    private static class CellUpdater implements  Runnable {
+    private static class CellUpdater implements Runnable {
 
         private final List<Cell> cells;
-        private  final CyclicBarrier barrier;
+        private final CyclicBarrier barrier;
 
         /**
          * Создает новый обновитель
-         * @param cells - клетки, которые следует обновлять
+         *
+         * @param cells   - клетки, которые следует обновлять
          * @param barrier - барьер для синхронизации потоков
          */
         public CellUpdater(List<Cell> cells, CyclicBarrier barrier) {

@@ -55,6 +55,7 @@ public class Main {
 
     /**
      * Считывает исходное состояние автомата из файла
+     *
      * @param inputFile - путь к исходному файлу
      * @return - исходное состояние автомата или null, если при чтении возникли проблемы
      */
@@ -74,23 +75,24 @@ public class Main {
                 }
                 if (width != line.length()) {
                     System.out.println("Error. Initial file is malformed. Board should be rectangular. Aborting");
-                    return  null;
+                    return null;
                 }
                 height++;
                 line = br.readLine();
             }
         } catch (FileNotFoundException e) {
             System.out.println("Error. Input file not found. Aborting");
-            return  null;
+            return null;
         } catch (IOException e) {
             System.out.println("Error. IO exception, while reading input file: " + e.getLocalizedMessage());
-            return  null;
+            return null;
         }
-        return new InitialState(width,height,states);
+        return new InitialState(width, height, states);
     }
 
     /**
-     *  Разбирает данные аргументы командной строки
+     * Разбирает данные аргументы командной строки
+     *
      * @param args - массив аргументов командной строки в виде строк
      * @return - структура распознанных аргументов
      */
@@ -103,7 +105,7 @@ public class Main {
         boolean realTime = false;
         if (args[0].equals("-help")
                 || args[0].equals("-h")
-                ||args[0].equals("?")) {
+                || args[0].equals("?")) {
             valid = false;
             outputHelp();
         } else {
@@ -118,7 +120,8 @@ public class Main {
                     stepNumber = Integer.parseInt(args[2]);
                 } catch (NumberFormatException e) {
                     valid = false;
-                    System.out.println("Error. Parsing step number argument failed. Exception: " + e.getLocalizedMessage());
+                    System.out.println(
+                            "Error. Parsing step number argument failed. Exception: " + e.getLocalizedMessage());
                 }
                 if (stepNumber < 0) {
                     valid = false;
@@ -136,7 +139,8 @@ public class Main {
                         }
                         default: {
                             valid = false;
-                            System.out.println("Error. Invalid value for a fourth argument. Only '-single' and '-multi' are accepted.");
+                            System.out.println(
+                                    "Error. Invalid value for a fourth argument. Only '-single' and '-multi' are accepted.");
                         }
                     }
                 }
@@ -145,7 +149,7 @@ public class Main {
                 System.out.println("Wrong number of input arguments. Only 3 or 4 arguments are allowed. Aborting");
             }
         }
-        return new ParsedArgs(valid,inputFile,outputFile,stepNumber,singleThread,realTime);
+        return new ParsedArgs(valid, inputFile, outputFile, stepNumber, singleThread, realTime);
     }
 
     /**
@@ -158,7 +162,8 @@ public class Main {
         System.out.println(" 1) Input file name");
         System.out.println(" 2) Output file name or '-realtime' to instead render every step to the console output");
         System.out.println(" 2) Number of steps");
-        System.out.println(" 4) (OPTIONAL) '-single' or '-multi'(default) to use either singlethread or multithread versions of automata");
+        System.out.println(
+                " 4) (OPTIONAL) '-single' or '-multi'(default) to use either singlethread or multithread versions of automata");
     }
 
     /**
@@ -173,13 +178,14 @@ public class Main {
         final boolean realTime;
 
         /**
-         *  Создает новую структуру, содердащую распознанные аргументы программы
-         * @param valid - были ли аргументы валидны и нужно ли исполнять программу дальше
-         * @param inputFile - пусть к входному файлу
-         * @param outputFile - путь к выходному файлу
-         * @param stepNumber - число шагов для автомата
+         * Создает новую структуру, содердащую распознанные аргументы программы
+         *
+         * @param valid        - были ли аргументы валидны и нужно ли исполнять программу дальше
+         * @param inputFile    - пусть к входному файлу
+         * @param outputFile   - путь к выходному файлу
+         * @param stepNumber   - число шагов для автомата
          * @param singleThread - нужно ли использовать однопоточный режим
-         * @param realTime - был ли запрошен вывод в реальном времени в консоль
+         * @param realTime     - был ли запрошен вывод в реальном времени в консоль
          */
         public ParsedArgs(
                 boolean valid, String inputFile, String outputFile,
@@ -194,7 +200,7 @@ public class Main {
     }
 
     /**
-     *  Структура,, описывающая начальное состояние автомата
+     * Структура,, описывающая начальное состояние автомата
      */
     private static class InitialState {
         final int width;
@@ -202,8 +208,9 @@ public class Main {
         final List<Boolean> states;
 
         /**
-         *  Создает новую структуру описания начального состояния автомата
-         * @param width - ширина поля автомата
+         * Создает новую структуру описания начального состояния автомата
+         *
+         * @param width  - ширина поля автомата
          * @param height - высота поля автомтаа
          * @param states - список начальных состояний клеток автомата
          */

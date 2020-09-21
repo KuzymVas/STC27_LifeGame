@@ -12,29 +12,28 @@ import java.util.List;
  */
 public abstract class AbstractRectangularWraparoundAutomata implements CellularAutomata {
 
-    private final int height;
-    private final int width;
-
-    protected final List<Cell> cells;
-
     private final static int[][] MOORE_DELTAS = {
             {-1, -1, 0, 1, 1, 1, 0, -1},
             {0, 1, 1, 1, 0, -1, -1, -1}
     };
     private final static int[][] VON_NEUMANN_DELTAS = {
-            {-1,  0, 0, 1},
-            { 0, -1, 1, 0}
+            {-1, 0, 0, 1},
+            {0, -1, 1, 0}
     };
     private final static int[][] EXTENDED_VON_NEUMANN_DELTAS = {
-            {-2, -1,  0,  0, 2, 1, 0, 0},
-            { 0,  0, -2, -1, 0, 0, 2, 1}
+            {-2, -1, 0, 0, 2, 1, 0, 0},
+            {0, 0, -2, -1, 0, 0, 2, 1}
     };
+    protected final List<Cell> cells;
+    private final int height;
+    private final int width;
 
     /**
      * Создает новый автомат
-     * @param width - ширина поля
-     * @param height - высота поля
-     * @param factory - фабрика для клеток
+     *
+     * @param width            - ширина поля
+     * @param height           - высота поля
+     * @param factory          - фабрика для клеток
      * @param neighborhoodType - тип локального окружения клетки: по Муру - это 8 клеток вокруг,
      *                         по Вон Нейману - 4 ортогональных клетки вокруг,
      *                         Расширенный Вон Нейман - 8 ортогональных клеток, по две в каждую сторону
@@ -59,7 +58,7 @@ public abstract class AbstractRectangularWraparoundAutomata implements CellularA
                 deltas = VON_NEUMANN_DELTAS;
                 break;
             }
-            case EXTENDED_VON_NEUMANN:{
+            case EXTENDED_VON_NEUMANN: {
                 deltas = EXTENDED_VON_NEUMANN_DELTAS;
             }
         }
@@ -95,9 +94,10 @@ public abstract class AbstractRectangularWraparoundAutomata implements CellularA
 
     /**
      * Возвращает клетку с указанными координатами по отношению к данной
+     *
      * @param ownIndex - индекс исходной клетки
-     * @param deltaX - смещение по горизонтали до соседа
-     * @param deltaY - смещение по вертикали до соседа
+     * @param deltaX   - смещение по горизонтали до соседа
+     * @param deltaY   - смещение по вертикали до соседа
      * @return - клетка-сосед
      */
     protected final Cell getNeighbor(int ownIndex, int deltaX, int deltaY) {
@@ -107,21 +107,24 @@ public abstract class AbstractRectangularWraparoundAutomata implements CellularA
         int ownX = ownIndex % width;
         int ownY = ownIndex / width;
         int neighborX = (ownX + deltaX) % width;
-        if (neighborX < 0 )
+        if (neighborX < 0) {
             neighborX = width + neighborX;
+        }
         int neighborY = (ownY + deltaY) % height;
-        if (neighborY < 0)
+        if (neighborY < 0) {
             neighborY = height + neighborY;
+        }
         return cells.get(neighborY * width + neighborX);
     }
 
     /**
      * Задает данной клетке ее соседей, определяемых заданными смещениями
+     *
      * @param ownIndex - индекс исходной клетки
-     * @param deltas - двумерный массив смещений: первое измерение - количество соседей,
-     *               второе = 2: смещения по Х и по Y соответственно.
+     * @param deltas   - двумерный массив смещений: первое измерение - количество соседей,
+     *                 второе = 2: смещения по Х и по Y соответственно.
      */
-    private  void initNeighborhood(int ownIndex, int[][] deltas) {
+    private void initNeighborhood(int ownIndex, int[][] deltas) {
         List<Cell> neighborhood = new ArrayList<>();
         for (int i = 0; i < deltas[0].length; i++) {
             neighborhood.add(getNeighbor(ownIndex, deltas[0][i], deltas[1][i]));

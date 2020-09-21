@@ -6,7 +6,7 @@ import org.innopolis.kuzymvas.cellular.cells.CellFactory;
 /**
  * Класс однопоточного клеточного автомата на замкнутом прямоугольном поле
  */
-public class SingleThreadRWAutomata extends  AbstractRectangularWraparoundAutomata {
+public class SingleThreadRWAutomata extends AbstractRectangularWraparoundAutomata {
 
     public SingleThreadRWAutomata(
             int width, int height, CellFactory factory, NeighborhoodType neighborhoodType) {
@@ -15,10 +15,10 @@ public class SingleThreadRWAutomata extends  AbstractRectangularWraparoundAutoma
 
     @Override
     public void updateAutomata() {
-        for (Cell cell: cells) {
+        for (Cell cell : cells) {
             cell.calculateNextState();
         }
-        for (Cell cell: cells) {
+        for (Cell cell : cells) {
             cell.updateState();
         }
     }
