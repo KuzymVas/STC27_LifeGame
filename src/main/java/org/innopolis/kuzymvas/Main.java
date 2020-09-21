@@ -103,6 +103,10 @@ public class Main {
         int stepNumber = 0;
         boolean singleThread = false;
         boolean realTime = false;
+        if (args.length < 1) {
+            System.out.println("No arguments provided. Aborting");
+            return new ParsedArgs(valid, inputFile, outputFile, stepNumber, singleThread, realTime);
+        }
         if (args[0].equals("-help")
                 || args[0].equals("-h")
                 || args[0].equals("?")) {
