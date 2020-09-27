@@ -14,7 +14,7 @@ public class AutomataFactory {
                return new MultiThreadRWAutomata(width,height,factory,neighborhoodType, 2);
            }
            case FORK_RWA: {
-               return new ForkJoinRWAutomata(width,height,factory,neighborhoodType, 2);
+               return new ForkJoinRWAutomata(width,height,factory,neighborhoodType);
            }
            default: {
                return null;

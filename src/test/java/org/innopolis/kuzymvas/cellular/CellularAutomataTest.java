@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
@@ -60,16 +59,13 @@ public class CellularAutomataTest {
     public void setUp() {
         mockCell = Mockito.mock(Cell.class);
         mockFactory = Mockito.mock(CellFactory.class);
-        Mockito.when(mockFactory.createCells(Mockito.anyInt())).thenAnswer(new Answer<List<Cell>>() {
-            @Override
-            public List<Cell> answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                List<Cell> list = new ArrayList<>();
-                for (int i = 0; i < (int) args[0]; i++) {
-                    list.add(mockCell);
-                }
-                return list;
+        Mockito.when(mockFactory.createCells(Mockito.anyInt())).thenAnswer((Answer<List<Cell>>) invocation -> {
+            Object[] args = invocation.getArguments();
+            List<Cell> list = new ArrayList<>();
+            for (int i = 0; i < (int) args[0]; i++) {
+                list.add(mockCell);
             }
+            return list;
         });
         automatasMoore = new ArrayList<>();
         for (int[] dims : AUTOMATA_DIMS) {

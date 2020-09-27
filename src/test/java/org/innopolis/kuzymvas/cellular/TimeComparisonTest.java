@@ -10,7 +10,7 @@ import java.util.List;
 public class TimeComparisonTest {
 
     private final static int RUNS  = 20;
-    private final static int[] SIZES = {50, 100, 150};
+    private final static int[] SIZES = {50, 100, 150, 200};
     private final static int STEPS = 200;
 
     @Test
@@ -58,7 +58,7 @@ public class TimeComparisonTest {
             }
             double avgTimeMulti = summaryTimeMulti/(1000.0*RUNS);
 
-            CellularAutomata forkJoin = new ForkJoinRWAutomata(size, size, factory, NeighborhoodType.MOORE, threadNumber);
+            CellularAutomata forkJoin = new ForkJoinRWAutomata(size, size, factory, NeighborhoodType.MOORE);
             long summaryTimeFork= 0;
             for (int i = 0; i < RUNS; i++) {
                 forkJoin.initAutomata(states);
@@ -76,6 +76,7 @@ public class TimeComparisonTest {
                                        + size + "^2 =" + avgTimeMulti);
             System.out.println("Average time for fork-join pool based automata for " + RUNS + " runs of " + STEPS + " steps  on field of "
                                        + size + "^2 =" + avgTimeFork);
+            System.out.println("=================================================");
 
         }
     }

@@ -1,9 +1,6 @@
 package org.innopolis.kuzymvas;
 
-import org.innopolis.kuzymvas.cellular.CellularAutomata;
-import org.innopolis.kuzymvas.cellular.MultiThreadRWAutomata;
-import org.innopolis.kuzymvas.cellular.NeighborhoodType;
-import org.innopolis.kuzymvas.cellular.SingleThreadRWAutomata;
+import org.innopolis.kuzymvas.cellular.*;
 import org.innopolis.kuzymvas.cellular.cells.CellFactory;
 import org.innopolis.kuzymvas.cellular.cells.ConwayCellFactory;
 import org.innopolis.kuzymvas.renderers.EndStepRenderer;
@@ -31,6 +28,9 @@ public class Main {
         if (parsedArgs.singleThread) {
             automata = new SingleThreadRWAutomata(initialState.width, initialState.height, factory,
                                                   NeighborhoodType.MOORE);
+        } else if (parsedArgs.forkJoin) {
+            automata = new ForkJoinRWAutomata(initialState.width, initialState.height, factory,
+                                              NeighborhoodType.MOORE);
         } else {
             int threadsToMake = Math.max(Runtime.getRuntime().availableProcessors(), 2);
             automata = new MultiThreadRWAutomata(initialState.width, initialState.height, factory,
@@ -102,10 +102,11 @@ public class Main {
         String outputFile = "";
         int stepNumber = 0;
         boolean singleThread = false;
+        boolean forkJoin = false;
         boolean realTime = false;
         if (args.length < 1) {
             System.out.println("No arguments provided. Aborting");
-            return new ParsedArgs(valid, inputFile, outputFile, stepNumber, singleThread, realTime);
+            return new ParsedArgs(false, inputFile, outputFile, stepNumber, singleThread, forkJoin, realTime);
         }
         if (args[0].equals("-help")
                 || args[0].equals("-h")
@@ -135,10 +136,17 @@ public class Main {
                     switch (args[3]) {
                         case "-single": {
                             singleThread = true;
+                            forkJoin = false;
                             break;
                         }
                         case "-multi": {
                             singleThread = false;
+                            forkJoin = false;
+                            break;
+                        }
+                        case "-fork": {
+                            singleThread = false;
+                            forkJoin = true;
                             break;
                         }
                         default: {
@@ -153,7 +161,7 @@ public class Main {
                 System.out.println("Wrong number of input arguments. Only 3 or 4 arguments are allowed. Aborting");
             }
         }
-        return new ParsedArgs(valid, inputFile, outputFile, stepNumber, singleThread, realTime);
+        return new ParsedArgs(valid, inputFile, outputFile, stepNumber, singleThread, forkJoin, realTime);
     }
 
     /**
@@ -167,7 +175,7 @@ public class Main {
         System.out.println(" 2) Output file name or '-realtime' to instead render every step to the console output");
         System.out.println(" 2) Number of steps");
         System.out.println(
-                " 4) (OPTIONAL) '-single' or '-multi'(default) to use either singlethread or multithread versions of automata");
+                " 4) (OPTIONAL) '-single' or '-multi'(default) or '-fork' to use either singlethread, multithread or fork-join pool based version of automata");
     }
 
     /**
@@ -179,6 +187,7 @@ public class Main {
         final String outputFile;
         final int stepNumber;
         final boolean singleThread;
+        final boolean forkJoin;
         final boolean realTime;
 
         /**
@@ -189,16 +198,18 @@ public class Main {
          * @param outputFile   - путь к выходному файлу
          * @param stepNumber   - число шагов для автомата
          * @param singleThread - нужно ли использовать однопоточный режим
+         * @param forkJoin     - нужно ли использовать вычисления через Fork-Join Pool
          * @param realTime     - был ли запрошен вывод в реальном времени в консоль
          */
         public ParsedArgs(
                 boolean valid, String inputFile, String outputFile,
-                int stepNumber, boolean singleThread, boolean realTime) {
+                int stepNumber, boolean singleThread, boolean forkJoin, boolean realTime) {
             this.valid = valid;
             this.inputFile = inputFile;
             this.outputFile = outputFile;
             this.stepNumber = stepNumber;
             this.singleThread = singleThread;
+            this.forkJoin = forkJoin;
             this.realTime = realTime;
         }
     }

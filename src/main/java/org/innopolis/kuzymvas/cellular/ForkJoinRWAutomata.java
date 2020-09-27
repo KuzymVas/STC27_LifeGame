@@ -3,16 +3,14 @@ package org.innopolis.kuzymvas.cellular;
 import org.innopolis.kuzymvas.cellular.cells.Cell;
 import org.innopolis.kuzymvas.cellular.cells.CellFactory;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 
+/**
+ * Класс многопоточного клеточного автомата, использующего Fork-Join pool для расчетов, на замкнутом прямоугольном поле
+ */
 public class ForkJoinRWAutomata extends AbstractRectangularWraparoundAutomata {
-
-    CyclicBarrier barrier;
-    boolean isOkay;
-    List<Thread> updatersThread;
 
     /**
      * Создает новый автомат
@@ -23,106 +21,93 @@ public class ForkJoinRWAutomata extends AbstractRectangularWraparoundAutomata {
      * @param neighborhoodType - тип локального окружения клетки: по Муру - это 8 клеток вокруг,
      *                         по Вон Нейману - 4 ортогональных клетки вокруг,
      *                         Расширенный Вон Нейман - 8 ортогональных клеток, по две в каждую сторону
-     * @param threadsNumber    - число потоков для использования в обновлениях
      */
     public ForkJoinRWAutomata(
             int width, int height, CellFactory factory,
-            NeighborhoodType neighborhoodType, int threadsNumber) {
+            NeighborhoodType neighborhoodType) {
         super(width, height, factory, neighborhoodType);
-        isOkay = true;
-        barrier = new CyclicBarrier(threadsNumber + 1);
-        updatersThread = new ArrayList<>();
-        int share = cells.size() / threadsNumber;
-        for (int i = 0; i < threadsNumber - 1; i++) {
-            List<Cell> currThreadCells = cells.subList(i * share, (i + 1) * share);
-            CellUpdater updater = new CellUpdater(currThreadCells, barrier);
-            Thread updaterThread = new Thread(updater);
-            updaterThread.setDaemon(true);
-            updaterThread.start();
-            updatersThread.add(updaterThread);
-        }
-        List<Cell> lastThreadCells = cells.subList((threadsNumber - 1) * share, cells.size());
-        CellUpdater updater = new CellUpdater(lastThreadCells, barrier);
-        Thread updaterThread = new Thread(updater);
-        updaterThread.setDaemon(true);
-        updaterThread.start();
-        updatersThread.add(updaterThread);
     }
 
     /**
-     * Настоящее обновление выполняется в других потоках. Этот метод лишь управляет ими,
-     * пропуская их через барьер по мере выполнения фаз обновления.
+     * Настоящее обновление выполняется в задачах типаа RecursiveAction на потоках Fork-Join pool.
+     * Этот метод лишь  последовательно запускает две фазы обновления, создаевая исходные две задачи
      */
     @Override
     public void updateAutomata() {
-        if (!isOkay) {
-            return;
-        }
-        try {
-            barrier.await();
-            barrier.await();
-            barrier.await();
-        } catch (InterruptedException e) {
-            System.out.println("Attempt to interrupt main automata thread. Shutting down automata");
-            shutDown();
-        } catch (BrokenBarrierException e) {
-            System.out.println("Automata cyclic barrier was broken. Shutting down automata");
-            shutDown();
-        }
+        CellPrepare cellPrepareTask = new CellPrepare(cells);
+        ForkJoinPool.commonPool().invoke(cellPrepareTask);
+        CellUpdate cellUpdateTask = new CellUpdate(cells);
+        ForkJoinPool.commonPool().invoke(cellUpdateTask);
     }
 
     /**
-     * Прерывает потоки обновления и выключает возможность обновления у автомата
+     * Класс задачи для Fork-Join pool, выполняющей вычисление нового состояния клеток
      */
-    private void shutDown() {
-        for (Thread updaterThread : updatersThread) {
-            updaterThread.interrupt();
-        }
-        isOkay = false;
-    }
-
-    /**
-     * Класс обновителя клеток для многопоточного автомата
-     */
-    private static class CellUpdater implements Runnable {
-
+    static class CellPrepare extends RecursiveAction {
+        private final static int THRESHOLD = 50;
         private final List<Cell> cells;
-        private final CyclicBarrier barrier;
 
         /**
-         * Создает новый обновитель
-         *
-         * @param cells   - клетки, которые следует обновлять
-         * @param barrier - барьер для синхронизации потоков
+         *  Создает новую задачу для заданного списка клеток
+         * @param cells - список клеток для вычисления нового состояния
          */
-        public CellUpdater(List<Cell> cells, CyclicBarrier barrier) {
+        public CellPrepare(List<Cell> cells) {
             this.cells = cells;
-            this.barrier = barrier;
         }
 
         /**
-         * Выполняет фазы обновления до тех пор, пока поток не будет прерван.
-         * Фазы разделены барьерами:
-         * - фаза простоя, пока обновление не начато
-         * - фаза перерасчета состояния
-         * - фаза записи перерасчитанных состояний
-         * - фаза простоя, пока обновление не начато...
+         * Либо вычисляет новое состояние клеток напрямую, либо разбивает их список пополам,
+         * порождая новые две задачи, если список слишком велик
          */
         @Override
-        public void run() {
-            try {
-                while (!Thread.interrupted()) {
-                    barrier.await();
-                    for (Cell cell : cells) {
-                        cell.calculateNextState();
-                    }
-                    barrier.await();
-                    for (Cell cell : cells) {
-                        cell.updateState();
-                    }
-                    barrier.await();
+        protected void compute() {
+            if (cells.size() < THRESHOLD) {
+                for (Cell cell : cells) {
+                    cell.calculateNextState();
                 }
-            } catch (InterruptedException | BrokenBarrierException ignored) {
+            } else {
+                CellPrepare left = new CellPrepare(cells.subList(0, cells.size() / 2));
+                CellPrepare right = new CellPrepare(cells.subList(cells.size() / 2, cells.size()));
+                left.fork();
+                right.fork();
+                right.join();
+                left.join();
+            }
+        }
+    }
+
+    /**
+     * Класс задачи для Fork-Join pool, выполняющей обновление состояния клеток
+     */
+    static class CellUpdate extends RecursiveAction {
+        private final static int THRESHOLD = 100;
+        private final List<Cell> cells;
+
+        /**
+         *  Создает новую задачу для заданного списка клеток
+         * @param cells - список клеток для обновления
+         */
+        public CellUpdate(List<Cell> cells) {
+            this.cells = cells;
+        }
+
+        /**
+         * Либо обновляет состояние клеток напрямую, либо разбивает их список пополам,
+         * порождая новые две задачи, если список слишком велик
+         */
+        @Override
+        protected void compute() {
+            if (cells.size() < THRESHOLD) {
+                for (Cell cell : cells) {
+                    cell.updateState();
+                }
+            } else {
+                CellUpdate left = new CellUpdate(cells.subList(0, cells.size() / 2));
+                CellUpdate right = new CellUpdate(cells.subList(cells.size() / 2, cells.size()));
+                left.fork();
+                right.fork();
+                right.join();
+                left.join();
             }
         }
     }
