@@ -13,6 +13,9 @@ public class AutomataFactory {
            case MULTI_RWA: {
                return new MultiThreadRWAutomata(width,height,factory,neighborhoodType, 2);
            }
+           case FORK_RWA: {
+               return new ForkJoinRWAutomata(width,height,factory,neighborhoodType, 2);
+           }
            default: {
                return null;
            }
@@ -21,6 +24,7 @@ public class AutomataFactory {
 
     public enum AutomataType {
         SINGLE_RWA,
-        MULTI_RWA
+        MULTI_RWA,
+        FORK_RWA
     }
 }

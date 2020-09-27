@@ -50,7 +50,8 @@ public class CellularAutomataTest {
     public static Collection automataToTest() {
         return Arrays.asList(new Object[][]{
                 {AutomataFactory.AutomataType.SINGLE_RWA, "Singlethread automata"},
-                {AutomataFactory.AutomataType.MULTI_RWA, "Multithread automata"}
+                {AutomataFactory.AutomataType.MULTI_RWA, "Multithread automata"},
+                {AutomataFactory.AutomataType.FORK_RWA, "Fork-Join pool automata"}
 
         });
     }

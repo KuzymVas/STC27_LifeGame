@@ -49,19 +49,33 @@ public class TimeComparisonTest {
             CellularAutomata multi = new MultiThreadRWAutomata(size, size, factory, NeighborhoodType.MOORE, threadNumber);
             long summaryTimeMulti = 0;
             for (int i = 0; i < RUNS; i++) {
-                single.initAutomata(states);
+                multi.initAutomata(states);
                 long startTime = System.currentTimeMillis();
                 for (int j = 0; j < STEPS; j++) {
-                    single.updateAutomata();
+                    multi.updateAutomata();
                 }
                 summaryTimeMulti += System.currentTimeMillis() - startTime;
             }
             double avgTimeMulti = summaryTimeMulti/(1000.0*RUNS);
 
+            CellularAutomata forkJoin = new ForkJoinRWAutomata(size, size, factory, NeighborhoodType.MOORE, threadNumber);
+            long summaryTimeFork= 0;
+            for (int i = 0; i < RUNS; i++) {
+                forkJoin.initAutomata(states);
+                long startTime = System.currentTimeMillis();
+                for (int j = 0; j < STEPS; j++) {
+                    forkJoin.updateAutomata();
+                }
+                summaryTimeFork += System.currentTimeMillis() - startTime;
+            }
+            double avgTimeFork = summaryTimeFork/(1000.0*RUNS);
+
             System.out.println("Average time for single-thread automata for " + RUNS + " runs of " + STEPS + " steps  on field of "
                                        + size + "^2 =" + avgTimeSingle);
             System.out.println("Average time for multi-thread automata for " + RUNS + " runs of " + STEPS + " steps  on field of "
                                        + size + "^2 =" + avgTimeMulti);
+            System.out.println("Average time for fork-join pool based automata for " + RUNS + " runs of " + STEPS + " steps  on field of "
+                                       + size + "^2 =" + avgTimeFork);
 
         }
     }
